@@ -54,12 +54,11 @@ public final class Mapper{
 
 		Map<String, Field> map = new TreeMap();
 		Class<?> c = o.getClass();
-
-		while(c != o.getClass())
-			for(Field f : c.getDeclaredFields())
-				if(!Modifier.isStatic(f.getModifiers()))
-					if(!map.containsKey(f.getName()))
-						map.put(f.getName(), f);
+		for(Field f : c.getDeclaredFields()) {
+			if(!Modifier.isStatic(f.getModifiers()))
+				if(!map.containsKey(f.getName()))
+					map.put(f.getName(), f);
+		}
 		return(map);
 	}
 }
