@@ -2,45 +2,33 @@ package com.shg.mapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.TreeMap;
 
 /**
  * @author SHG
  */
-public final class Mapper{
-
-	public static void mapList(final List<Object> from, List<Object> to) {
-		if (Objects.isNull(from))
-			throw new NullPointerException("No se puede realizar el mapeo de una lista nula.");
-		to = new ArrayList();
-
-		for (Object o : from) {
-			Object toObject = new Object();
-			map(o, toObject);
-			to.add(toObject);
-		}
+public final class Mapper {
+	public static void map(final Object from, Object to) {
+		mapElement(from, to);
 	}
 
-	public static void map(final Object from, final Object to) {
+	private static void mapElement(final Object from, final Object to) {
 		Map<String, Field> fromFields = analyze(from);
 		Map<String, Field> toFields = analyze(to);
 		fromFields.keySet().retainAll(toFields.keySet());
-		for(Entry<String, Field> fFieldEntry:fromFields.entrySet()) {
-			final String name = fFieldEntry.getKey();
-			final Field sourceField = fFieldEntry.getValue();
-			final Field targerField = toFields.get(name);
-			if(targerField.getType().isAssignableFrom(sourceField.getType())) {
+		for(Entry<String, Field> fromFieldEntry : fromFields.entrySet()) {
+			final String name = fromFieldEntry.getKey();
+			final Field sourceField = fromFieldEntry.getValue();
+			final Field targetField = toFields.get(name);
+			if(targetField.getType().isAssignableFrom(sourceField.getType())) {
 				sourceField.setAccessible(true);
-				if(Modifier.isFinal(targerField.getModifiers()))
+				if(Modifier.isFinal(targetField.getModifiers()))
 					continue;
-				targerField.setAccessible(true);
+				targetField.setAccessible(true);
 				try {
-					targerField.set(to, sourceField.get(from));
+					targetField.set(to, sourceField.get(from));
 				} catch(IllegalAccessException e) {
 					throw new IllegalStateException("¡No puede acceder al campo!");
 				}
@@ -54,11 +42,10 @@ public final class Mapper{
 
 		Map<String, Field> map = new TreeMap();
 		Class<?> c = o.getClass();
-		for(Field f : c.getDeclaredFields()) {
+		for(Field f : c.getDeclaredFields())
 			if(!Modifier.isStatic(f.getModifiers()))
 				if(!map.containsKey(f.getName()))
 					map.put(f.getName(), f);
-		}
 		return(map);
 	}
 }
